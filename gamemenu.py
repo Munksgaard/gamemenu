@@ -95,20 +95,22 @@ class Santa(IScreenObject):
       self.x = maxx
       self.y = int(random.random() * maxy)
 
+def draw_maybe_inverted_character(stdscr, char, y, x):
+  try:
+    if stdscr.inch(y, x) & curses.A_REVERSE != 0:
+      stdscr.addch(y, x, char, curses.A_REVERSE)
+    else:
+      stdscr.addch(y, x, char)
+  except curses.error:
+    pass
+
 class Snowflake(IScreenObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
 
   def draw(self, stdscr):
-    maxy, maxx = stdscr.getmaxyx()
-    try:
-      if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
-        stdscr.addch(self.y, self.x, '*', curses.A_REVERSE)
-      else:
-        stdscr.addstr(self.y, self.x, '*')
-    except:
-      pass
+    draw_maybe_inverted_character(stdscr, "*", self.y, self.x)
 
   def update(self, stdscr):
     maxy, maxx = stdscr.getmaxyx()
@@ -138,14 +140,7 @@ class Raindrop(IScreenObject):
     self.y = y
 
   def draw(self, stdscr):
-    maxy, maxx = stdscr.getmaxyx()
-    try:
-      if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
-        stdscr.addch(self.y, self.x, '/', curses.A_REVERSE)
-      else:
-        stdscr.addstr(self.y, self.x, '/')
-    except:
-      pass
+    draw_maybe_inverted_character(stdscr, "/", self.y, self.x)
 
   def update(self, stdscr):
     maxy, maxx = stdscr.getmaxyx()
