@@ -95,8 +95,7 @@ class Snowflake:
   def draw(self, stdscr, games, current):
     maxy, maxx = stdscr.getmaxyx()
     try:
-      l = len(games[current][0] + "  (" + games[current][1] + ")")
-      if self.y == maxy / 2 - 1 and maxx / 2 - 12 <= self.x < maxx / 2 - 12 + l :
+      if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
         stdscr.addch(self.y, self.x, '*', curses.A_REVERSE)
       else:
         stdscr.addstr(self.y, self.x, '*')
@@ -134,8 +133,7 @@ class Rainflake:
   def draw(self, stdscr, games, current):
     maxy, maxx = stdscr.getmaxyx()
     try:
-      l = len(games[current][0] + "  (" + games[current][1] + ")")
-      if self.y == maxy / 2 - 1 and maxx / 2 - 12 <= self.x < maxx / 2 - 12 + l:
+      if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
         stdscr.addch(self.y, self.x, '/', curses.A_REVERSE)
       else:
         stdscr.addstr(self.y, self.x, '/')
