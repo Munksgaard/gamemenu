@@ -203,10 +203,7 @@ def menu_loop(stdscr, games, debug):
         games = find_games()
         i = 0
       elif c == ord('\n'):
-        if i == 0:
-          subprocess.call(["dosbox", games[0][2], "-fullscreen", "-exit"])
-          stdscr.clear()
-        elif games[i][1] == "dosbox":
+        if games[i][1] == "dosbox":
           subprocess.call(["dosbox", games[i][2], "-fullscreen", "-exit"])
           stdscr.clear()
         elif games[i][1] == "mame":
