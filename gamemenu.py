@@ -92,7 +92,7 @@ class Snowflake:
     self.x = x
     self.y = y
 
-  def draw(self, stdscr, games, current):
+  def draw(self, stdscr):
     maxy, maxx = stdscr.getmaxyx()
     try:
       if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
@@ -112,7 +112,7 @@ class Snowflake:
       self.x = self.x + 1
 
 snow = []
-def update_snow(stdscr, games, current):
+def update_snow(stdscr):
   maxy, maxx = stdscr.getmaxyx()
   for flake in snow:
     flake.update(stdscr)
@@ -120,17 +120,16 @@ def update_snow(stdscr, games, current):
       snow.remove(flake)
   snow.append(Snowflake(random.randint(0, maxx-1), 0))
 
-def draw_snow(stdscr, games, current):
+def draw_snow(stdscr):
   for flake in snow:
-    flake.draw(stdscr, games, current)
-
+    flake.draw(stdscr)
 
 class Rainflake:
   def __init__(self, x, y):
     self.x = x
     self.y = y
 
-  def draw(self, stdscr, games, current):
+  def draw(self, stdscr):
     maxy, maxx = stdscr.getmaxyx()
     try:
       if stdscr.inch(self.y, self.x) & curses.A_REVERSE != 0:
@@ -146,7 +145,7 @@ class Rainflake:
     self.x = self.x - 1
 
 rain = []
-def update_rain(stdscr, games, current):
+def update_rain(stdscr):
   maxy, maxx = stdscr.getmaxyx()
   for flake in rain:
     flake.update(stdscr)
@@ -155,9 +154,9 @@ def update_rain(stdscr, games, current):
   rain.append(Rainflake(random.randint(0, maxy + maxx-1), 0))
   rain.append(Rainflake(random.randint(0, maxy + maxx-1), 0))
 
-def draw_rain(stdscr, games, current):
+def draw_rain(stdscr):
   for flake in rain:
-    flake.draw(stdscr, games, current)
+    flake.draw(stdscr)
 
 
 def menu_loop(stdscr, games, debug):
@@ -175,9 +174,9 @@ def menu_loop(stdscr, games, debug):
   while True:
     try:
       draw_menu(stdscr, games, i)
-      # draw_snow(stdscr, games, i)
+      # draw_snow(stdscr)
       # santa.draw(stdscr)
-      draw_rain(stdscr, games, i)
+      draw_rain(stdscr)
       witch.draw(stdscr)
       stdscr.refresh()
       while True:
@@ -186,12 +185,12 @@ def menu_loop(stdscr, games, debug):
           break
         stdscr.erase()
         draw_menu(stdscr,games,i)
-        # update_snow(stdscr, games, i)
-        # draw_snow(stdscr, games, i)
+        # update_snow(stdscr)
+        # draw_snow(stdscr)
         # santa.update(stdscr)
         # santa.draw(stdscr)
-        update_rain(stdscr, games, i)
-        draw_rain(stdscr, games, i)
+        update_rain(stdscr)
+        draw_rain(stdscr)
         witch.update()
         witch.draw(stdscr)
       if c == curses.KEY_DOWN:
