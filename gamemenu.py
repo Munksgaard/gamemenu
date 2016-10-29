@@ -10,6 +10,14 @@ from collections import deque
 import random
 import getopt
 
+class IScreenObject():
+  def __init__():
+    raise NotImplementedError("This class cannot be instantiated")
+  def update(self, stdscr):
+    raise NotImplementedError("This method cannot be called")
+  def draw(self, stdscr):
+    raise NotImplementedError("This method cannot be called")
+
 def find_games():
   games = []
   with open('gamelist', 'r') as gamelist:
@@ -41,7 +49,7 @@ def draw_sprite(start_y, start_x, sprite, stdscr, escape_char = None):
       if 0 <= start_x + x < maxx and 0 <= start_y + y < maxy and c != escape_char:
         stdscr.addch(start_y + y, start_x + x, c)
 
-class Witch:
+class Witch(IScreenObject):
   def __init__(self, y, x):
     self.x = x
     self.y = y
@@ -56,7 +64,7 @@ class Witch:
   def update(self):
     self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
 
-class Santa:
+class Santa(IScreenObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
@@ -87,7 +95,7 @@ class Santa:
       self.x = maxx
       self.y = int(random.random() * maxy)
 
-class Snowflake:
+class Snowflake(IScreenObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
@@ -124,7 +132,7 @@ def draw_snow(stdscr):
   for flake in snow:
     flake.draw(stdscr)
 
-class Rainflake:
+class Raindrop(IScreenObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
@@ -151,13 +159,12 @@ def update_rain(stdscr):
     flake.update(stdscr)
     if flake.y >= maxy:
       rain.remove(flake)
-  rain.append(Rainflake(random.randint(0, maxy + maxx-1), 0))
-  rain.append(Rainflake(random.randint(0, maxy + maxx-1), 0))
+  rain.append(Raindrop(random.randint(0, maxy + maxx-1), 0))
+  rain.append(Raindrop(random.randint(0, maxy + maxx-1), 0))
 
 def draw_rain(stdscr):
   for flake in rain:
     flake.draw(stdscr)
-
 
 def menu_loop(stdscr, games, debug):
   curses.curs_set(0)
