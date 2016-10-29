@@ -231,7 +231,13 @@ def main():
   games = find_games()
   print len(games)
 
+  # Redirect errors while curses is active
+  f = open("error.log","w")
+  original_stderr = sys.stderr
+  sys.stderr = f
   curses.wrapper(menu_loop,games)
+  sys.stderr = original_stderr
+  f.close()
 
 if __name__=="__main__":
   main()
