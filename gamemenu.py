@@ -233,15 +233,24 @@ def menu_loop(stdscr, games, debug):
 
 def main(argv):
   debug = False
+  errorFile = "error.log"
   # Parse input arguments
   try:
-    opts, args = getopt.getopt(argv,"d",["--debug"])
+    opts, args = getopt.getopt(argv,"hde:",["errfile="])
   except getopt.GetOptError:
     print "gamemenu.py"
     sys.exit(2)
   for opt, arg in opts:
+    if opt in ("-h","--debug"):
+      print """gamemenu.py flags:
+-h:\t\tPrint help
+-d:\t\tEnable debug mode
+-e, --errfile:\tSpecify the new location of std.err."""
+      sys.exit(2)
     if opt in ("-d","--debug"):
       debug = True
+    if opt in ("-e","--errfile"):
+      errorFile = arg
 
   games = find_games()
   print len(games)
