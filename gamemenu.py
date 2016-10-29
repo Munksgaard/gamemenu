@@ -8,6 +8,7 @@ import curses
 import os
 from collections import deque
 import random
+import getopt
 
 def find_games():
   games = []
@@ -161,7 +162,7 @@ def draw_rain(stdscr, games, current):
     flake.draw(stdscr, games, current)
 
 
-def menu_loop(stdscr, games):
+def menu_loop(stdscr, games, debug):
   curses.curs_set(0)
 
   i = 0
@@ -224,10 +225,24 @@ def menu_loop(stdscr, games):
         else:
           print "I don't know how to run that game..." + games[i][1]
       stdscr.erase()
-    except:
-      pass
+    except KeyboardInterrupt:
+      if debug:
+        sys.exit(1)
+      else:
+        pass
 
-def main():
+def main(argv):
+  debug = False
+  # Parse input arguments
+  try:
+    opts, args = getopt.getopt(argv,"d",["--debug"])
+  except getopt.GetOptError:
+    print "gamemenu.py"
+    sys.exit(2)
+  for opt, arg in opts:
+    if opt in ("-d","--debug"):
+      debug = True
+
   games = find_games()
   print len(games)
 
@@ -235,9 +250,9 @@ def main():
   f = open("error.log","w")
   original_stderr = sys.stderr
   sys.stderr = f
-  curses.wrapper(menu_loop,games)
+  curses.wrapper(menu_loop,games,debug)
   sys.stderr = original_stderr
   f.close()
 
 if __name__=="__main__":
-  main()
+  main(sys.argv[1:])
