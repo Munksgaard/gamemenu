@@ -104,10 +104,38 @@ def draw_maybe_inverted_character(stdscr, char, y, x):
   except curses.error:
     pass
 
-class Snowflake(IScreenObject):
+class IPrecipitationObject(IScreenObject):
+  @classmethod
+  def random(self, maxx, maxy):
+    raise NotImplementedError("This method cannot be called")
+
+class Precipitation(IScreenObject):
+  def __init__(self,pClass,n):
+    self.pClass = pClass
+    self.objects = []
+    self.n = n
+
+  def draw(self, stdscr):
+    for pObject in self.objects:
+      pObject.draw(stdscr)
+
+  def update(self, stdscr):
+    maxy, maxx = stdscr.getmaxyx()
+    for pObject in self.objects:
+      pObject.update(stdscr)
+      if pObject.y >= maxy:
+        self.objects.remove(pObject)
+    for _ in range(self.n):
+      self.objects.append(self.pClass.random(maxx,maxy))
+
+class Snowflake(IPrecipitationObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
+
+  @classmethod
+  def random(self, maxx, _):
+    return Snowflake(random.randint(0, maxx-1),0)
 
   def draw(self, stdscr):
     draw_maybe_inverted_character(stdscr, "*", self.y, self.x)
@@ -121,23 +149,14 @@ class Snowflake(IScreenObject):
     elif tmp > 0.8 and self.x < maxx - 1:
       self.x = self.x + 1
 
-snow = []
-def update_snow(stdscr):
-  maxy, maxx = stdscr.getmaxyx()
-  for flake in snow:
-    flake.update(stdscr)
-    if flake.y >= maxy:
-      snow.remove(flake)
-  snow.append(Snowflake(random.randint(0, maxx-1), 0))
-
-def draw_snow(stdscr):
-  for flake in snow:
-    flake.draw(stdscr)
-
-class Raindrop(IScreenObject):
+class Raindrop(IPrecipitationObject):
   def __init__(self, x, y):
     self.x = x
     self.y = y
+
+  @classmethod
+  def random(self, maxx, maxy):
+    return Raindrop(random.randint(0, maxy + maxx - 1), 0)
 
   def draw(self, stdscr):
     draw_maybe_inverted_character(stdscr, "/", self.y, self.x)
@@ -146,20 +165,6 @@ class Raindrop(IScreenObject):
     maxy, maxx = stdscr.getmaxyx()
     self.y = self.y + 1
     self.x = self.x - 1
-
-rain = []
-def update_rain(stdscr):
-  maxy, maxx = stdscr.getmaxyx()
-  for flake in rain:
-    flake.update(stdscr)
-    if flake.y >= maxy:
-      rain.remove(flake)
-  rain.append(Raindrop(random.randint(0, maxy + maxx-1), 0))
-  rain.append(Raindrop(random.randint(0, maxy + maxx-1), 0))
-
-def draw_rain(stdscr):
-  for flake in rain:
-    flake.draw(stdscr)
 
 def menu_loop(stdscr, games, debug):
   curses.curs_set(0)
@@ -170,15 +175,15 @@ def menu_loop(stdscr, games, debug):
 
   maxy, maxx = stdscr.getmaxyx()
 
+  precipitation = Precipitation(Snowflake,2)
   santa = Santa(maxx-1, 20)
   witch = Witch(maxy-9, 3)
 
   while True:
     try:
       draw_menu(stdscr, games, i)
-      # draw_snow(stdscr)
       # santa.draw(stdscr)
-      draw_rain(stdscr)
+      precipitation.draw(stdscr)
       witch.draw(stdscr)
       stdscr.refresh()
       while True:
@@ -187,12 +192,10 @@ def menu_loop(stdscr, games, debug):
           break
         stdscr.erase()
         draw_menu(stdscr,games,i)
-        # update_snow(stdscr)
-        # draw_snow(stdscr)
         # santa.update(stdscr)
         # santa.draw(stdscr)
-        update_rain(stdscr)
-        draw_rain(stdscr)
+        precipitation.update(stdscr)
+        precipitation.draw(stdscr)
         witch.update()
         witch.draw(stdscr)
       if c == curses.KEY_DOWN:
