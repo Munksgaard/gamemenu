@@ -50,24 +50,26 @@ def draw_sprite(start_y, start_x, sprite, stdscr, escape_char = None):
         stdscr.addch(start_y + y, start_x + x, c)
 
 class Witch(IScreenObject):
-  def __init__(self, y, x):
+  def __init__(self, y, x, stdscr):
     self.x = x
     self.y = y
+    self.stdscr = stdscr
     filehandle = open("halloween.txt")
     self.sprites = filehandle.read().split("@\n")
     filehandle.close()
     self.current_sprite = 0
 
-  def draw(self, stdscr):
-    draw_sprite(self.y, self.x, self.sprites[self.current_sprite], stdscr)
+  def draw(self):
+    draw_sprite(self.y, self.x, self.sprites[self.current_sprite], self.stdscr)
 
   def update(self):
     self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
 
 class Santa(IScreenObject):
-  def __init__(self, x, y):
+  def __init__(self, x, y, stdscr):
     self.x = x
     self.y = y
+    self.stdscr = stdscr
 
   sprite = """
 @@@@@@@@@@@@@@@@@@@@   @
@@ -79,11 +81,11 @@ class Santa(IScreenObject):
 @@                          @
 """[1:]
 
-  def draw(self, stdscr):
-    draw_sprite(self.y, self.x, self.sprite, stdscr, '@')
+  def draw(self):
+    draw_sprite(self.y, self.x, self.sprite, self.stdscr, '@')
 
-  def update(self, stdscr):
-    maxy, maxx = stdscr.getmaxyx()
+  def update(self):
+    maxy, maxx = self.stdscr.getmaxyx()
     self.x = self.x-1
     tmp = random.random()
     if tmp < 0.05 and self.y > 0:
@@ -106,42 +108,45 @@ def draw_maybe_inverted_character(stdscr, char, y, x):
 
 class IPrecipitationObject(IScreenObject):
   @classmethod
-  def random(self, maxx, maxy):
+  def random(self, stdscr):
     raise NotImplementedError("This method cannot be called")
 
 class Precipitation(IScreenObject):
-  def __init__(self,pClass,n):
+  def __init__(self, pClass, n, stdscr):
     self.pClass = pClass
     self.objects = []
     self.n = n
+    self.stdscr = stdscr
 
-  def draw(self, stdscr):
+  def draw(self):
     for pObject in self.objects:
-      pObject.draw(stdscr)
+      pObject.draw()
 
-  def update(self, stdscr):
-    maxy, maxx = stdscr.getmaxyx()
+  def update(self):
+    maxy, maxx = self.stdscr.getmaxyx()
     for pObject in self.objects:
-      pObject.update(stdscr)
+      pObject.update()
       if pObject.y >= maxy:
         self.objects.remove(pObject)
     for _ in range(self.n):
-      self.objects.append(self.pClass.random(maxx,maxy))
+      self.objects.append(self.pClass.random(self.stdscr))
 
 class Snowflake(IPrecipitationObject):
-  def __init__(self, x, y):
+  def __init__(self, x, y, stdscr):
     self.x = x
     self.y = y
+    self.stdscr = stdscr
 
   @classmethod
-  def random(self, maxx, _):
-    return Snowflake(random.randint(0, maxx-1),0)
+  def random(self, stdscr):
+    _, maxx = stdscr.getmaxyx()
+    return Snowflake(random.randint(0, maxx-1), 0, stdscr)
 
-  def draw(self, stdscr):
-    draw_maybe_inverted_character(stdscr, "*", self.y, self.x)
+  def draw(self):
+    draw_maybe_inverted_character(self.stdscr, "*", self.y, self.x)
 
-  def update(self, stdscr):
-    maxy, maxx = stdscr.getmaxyx()
+  def update(self):
+    _, maxx = self.stdscr.getmaxyx()
     self.y = self.y + 1
     tmp = random.random()
     if tmp < 0.2 and self.x > 0:
@@ -150,19 +155,21 @@ class Snowflake(IPrecipitationObject):
       self.x = self.x + 1
 
 class Raindrop(IPrecipitationObject):
-  def __init__(self, x, y):
+  def __init__(self, x, y, stdscr):
     self.x = x
     self.y = y
+    self.stdscr = stdscr
 
   @classmethod
-  def random(self, maxx, maxy):
-    return Raindrop(random.randint(0, maxy + maxx - 1), 0)
-
-  def draw(self, stdscr):
-    draw_maybe_inverted_character(stdscr, "/", self.y, self.x)
-
-  def update(self, stdscr):
+  def random(self, stdscr):
     maxy, maxx = stdscr.getmaxyx()
+    return Raindrop(random.randint(0, maxy + maxx - 1), 0, stdscr)
+
+  def draw(self):
+    draw_maybe_inverted_character(self.stdscr, "/", self.y, self.x)
+
+  def update(self):
+    maxy, maxx = self.stdscr.getmaxyx()
     self.y = self.y + 1
     self.x = self.x - 1
 
@@ -175,16 +182,16 @@ def menu_loop(stdscr, games, debug):
 
   maxy, maxx = stdscr.getmaxyx()
 
-  precipitation = Precipitation(Snowflake,2)
-  santa = Santa(maxx-1, 20)
-  witch = Witch(maxy-9, 3)
+  precipitation = Precipitation(Raindrop, 2, stdscr)
+  santa = Santa(maxx-1, 20, stdscr)
+  witch = Witch(maxy-9, 3, stdscr)
 
   while True:
     try:
       draw_menu(stdscr, games, i)
-      # santa.draw(stdscr)
-      precipitation.draw(stdscr)
-      witch.draw(stdscr)
+      # santa.draw()
+      precipitation.draw()
+      witch.draw()
       stdscr.refresh()
       while True:
         c = stdscr.getch()
@@ -192,12 +199,12 @@ def menu_loop(stdscr, games, debug):
           break
         stdscr.erase()
         draw_menu(stdscr,games,i)
-        # santa.update(stdscr)
-        # santa.draw(stdscr)
-        precipitation.update(stdscr)
-        precipitation.draw(stdscr)
+        # santa.update()
+        # santa.draw()
+        precipitation.update()
+        precipitation.draw()
         witch.update()
-        witch.draw(stdscr)
+        witch.draw()
       if c == curses.KEY_DOWN:
         i = min(i + 1, len(games) - 1)
       elif c == curses.KEY_UP:
